@@ -48,4 +48,15 @@ public class FileScanner: IteratorProtocol, Sequence {
     public func reset() {
         bufferedReader.reset()
     }
+    
+    /// Closes the `FileScanner` and releases any allocated resources.
+    ///
+    /// Call this method when you have finished using the `FileScanner` and want to release any allocated resources.
+    /// After calling `close()`, the `FileScanner` is no longer valid and should not be used.
+    ///
+    /// It is important to close the `FileScanner` when you're done with it to release system resources and ensure proper cleanup.
+    /// Failure to close the `FileScanner` can result in resource leaks and unexpected behavior.
+    public func close() {
+        self.bufferedReader.close()
+    }
 }

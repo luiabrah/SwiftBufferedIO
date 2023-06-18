@@ -20,9 +20,7 @@ public class BufferedReader {
     }
     
     deinit {
-        // Attempt to close the `FileHandle` when deallocated, ignore failures which likely mean it has already closed
-        try? self.fileHandle.close()
-        self.buffer.removeAll()
+        self.close()
     }
     
     /// Reads data synchronously from the file up to the specified number of bytes, `length`.
@@ -114,5 +112,18 @@ public class BufferedReader {
     public func reset() {
         fileHandle.seek(toFileOffset: 0)
         buffer = Data(capacity: bufferSize)
+    }
+    
+    /// Closes the `BufferedReader` and releases any allocated resources.
+    ///
+    /// Call this method when you have finished using the `BufferedReader` and want to release any allocated resources.
+    /// After calling `close()`, the `BufferedReader` is no longer valid and should not be used.
+    ///
+    /// It is important to close the `BufferedReader` when you're done with it to release system resources and ensure proper cleanup.
+    /// Failure to close the `BufferedReader` can result in resource leaks and unexpected behavior.
+    public func close() {
+        // Attempt to close the `FileHandle` when deallocated, ignore failures which likely mean it has already closed
+        try? self.fileHandle.close()
+        self.buffer.removeAll()
     }
 }
