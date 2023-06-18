@@ -61,11 +61,11 @@ for line in fileScanner {
 
 Being a `Sequences` gives us access to methods like `.map`, `.filter`, `.forEach`:
 ```swift
-   scanner.filter { line in
-        line.hasPrefix("...")
-    }.map { line in
-        process(line)
-    }
+scanner.filter { line in
+    line.hasPrefix("...")
+}.map { line in
+    process(line)
+}
 
     // Close FileScanner when finished with it
 fileScanner.close()
