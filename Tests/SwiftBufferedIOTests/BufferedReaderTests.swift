@@ -16,7 +16,7 @@ final class BufferedReaderTests: XCTestCase {
         TestFileUtils.deleteFile(self.testFileURL)
     }
     
-    func test_readData_readlengthSmallerThanFileContents_returnsExpectedFileContent() throws {
+    func test_readData_readLengthSmallerThanFileContents_returnsExpectedFileContent() throws {
         let string1 = "12345678"
         let string2 = "87645321"
         // 16 byte string in file
@@ -188,5 +188,103 @@ final class BufferedReaderTests: XCTestCase {
         
         // There should be no more data to read
         XCTAssertNil(bufferedReader.readString(upToDelimiter: "\n"))
+    }
+    
+    func test_readDataAndReadLine_returnsExpectedFileContent() throws {
+        let string1 = "12345678"
+        let string2 = "87645321"
+        let string3 = "13579321"
+        
+        let fileContents = "\(string1)\n\(string2)\n\(string3)\n"
+        FileManager.default.createFile(atPath: self.testFileURL.path,
+                                       contents: fileContents.data(using: .utf8))
+        
+        let fileHandle = try FileHandle(forReadingFrom: self.testFileURL)
+        let bufferedReader = BufferedReader(fileHandle: fileHandle, bufferSize: 10)
+        
+        guard let dataRead1 = bufferedReader.readData(ofLength: 9) else {
+            XCTFail("Should be able to read data from file")
+            return
+        }
+        
+        // In this case, we read the delimiter explicitly
+        XCTAssertEqual(9, dataRead1.count)
+        XCTAssertEqual("\(string1)\n", String(data: dataRead1, encoding: .utf8)!)
+        
+        guard let stringRead = bufferedReader.readString(upToDelimiter: "\n") else {
+            XCTFail("Should be able to read data from file")
+            return
+        }
+        
+        // Delimiter not returned
+        XCTAssertEqual(8, stringRead.count)
+        XCTAssertEqual(string2, stringRead)
+        
+        // Read another 9 bytes
+        guard let dataRead2 = bufferedReader.readData(ofLength: 9) else {
+            XCTFail("Should be able to read data from file")
+            return
+        }
+        
+        XCTAssertEqual(9, dataRead2.count)
+        XCTAssertEqual("\(string3)\n", String(data: dataRead2, encoding: .utf8)!)
+   
+        // Reading data again should return nil
+        XCTAssertNil(bufferedReader.readData(ofLength: 1))
+    }
+    
+    func test_readDataAndReadLine_reset_returnsExpectedFileContent() throws {
+        let string1 = "12345678"
+        let string2 = "87645321"
+        let string3 = "13579321"
+        
+        let fileContents = "\(string1)\n\(string2)\n\(string3)\n"
+        FileManager.default.createFile(atPath: self.testFileURL.path,
+                                       contents: fileContents.data(using: .utf8))
+        
+        let fileHandle = try FileHandle(forReadingFrom: self.testFileURL)
+        let bufferedReader = BufferedReader(fileHandle: fileHandle, bufferSize: 10)
+        
+        guard let dataRead1 = bufferedReader.readData(ofLength: 9) else {
+            XCTFail("Should be able to read data from file")
+            return
+        }
+        
+        // In this case, we read the delimiter explicitly
+        XCTAssertEqual(9, dataRead1.count)
+        XCTAssertEqual("\(string1)\n", String(data: dataRead1, encoding: .utf8)!)
+        
+        // Reset
+        bufferedReader.reset()
+        
+        guard let stringRead1 = bufferedReader.readString(upToDelimiter: "\n") else {
+            XCTFail("Should be able to read data from file")
+            return
+        }
+        
+        // Delimiter not returned
+        XCTAssertEqual(8, stringRead1.count)
+        XCTAssertEqual(string1, stringRead1)
+        
+        guard let stringRead2 = bufferedReader.readString(upToDelimiter: "\n") else {
+            XCTFail("Should be able to read data from file")
+            return
+        }
+        
+        // Delimiter not returned
+        XCTAssertEqual(8, stringRead2.count)
+        XCTAssertEqual(string2, stringRead2)
+        
+        guard let stringRead3 = bufferedReader.readString(upToDelimiter: "\n") else {
+            XCTFail("Should be able to read data from file")
+            return
+        }
+        
+        // Delimiter not returned
+        XCTAssertEqual(8, stringRead3.count)
+        XCTAssertEqual(string3, stringRead3)
+        
+        // Reading data again should return nil
+        XCTAssertNil(bufferedReader.readData(ofLength: 1))
     }
 }

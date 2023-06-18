@@ -32,29 +32,34 @@ public class BufferedReader {
         }
         
         // Allocate buffer for reading data from file
-        var bufferedData = Data(capacity: min(bufferSize, length))
+        var dataToReturn = Data(capacity: length)
         var remainingLength = length
 
         // While there is still data to be read
         while remainingLength > 0 {
-            // Ensure we don't read more than the remaining length
-            let bytesToRead = min(bufferSize, remainingLength)
-            
-            // After the read operation, the file handle's position is automatically moved forward by the number of bytes read.
-            // This allows us to not have to manage our own pointer
-            guard let dataRead = try? fileHandle.read(upToCount: bytesToRead) else {
-                break
+
+            if buffer.isEmpty {
+                // After the read operation, the file handle's position is automatically moved forward by the number of bytes read.
+                // This allows us to not have to manage our own pointer
+                guard let dataRead = try? fileHandle.read(upToCount: bufferSize) else {
+                    break
+                }
+                
+                buffer.append(dataRead)
             }
             
-            bufferedData.append(dataRead)
+            // Ensure we don't read more than the remaining length
+            let bytesToCopy = min(buffer.count, remainingLength)
+            dataToReturn.append(buffer.prefix(bytesToCopy))
+            buffer.removeFirst(bytesToCopy)
             // Update how many bytes we have to read by how many were read
-            remainingLength -= dataRead.count
+            remainingLength -= bytesToCopy
         }
         
-        return bufferedData.isEmpty ? nil : bufferedData
+        return dataToReturn.isEmpty ? nil : dataToReturn
     }
     
-    /// Reads a line of `Data` up to and including the specified delimiter from the file handle, utilizing buffering for improved performance.
+    /// Reads a line of `Data` up to the specified delimiter from the file handle, utilizing buffering for improved performance. The delimiter is not returned.
     /// `ReadLine` is a low-level line-reading primitive. Most users should use `FileScanner` to scan a file line by line.
     ///
     /// The delimiter should be a valid ASCII character.
@@ -69,17 +74,19 @@ public class BufferedReader {
             // Search in the entire buffer
             let bufferSearchRange = buffer.startIndex..<buffer.endIndex
             if let delimiterRange = buffer.range(of: delimiterASCIIValueData, options: [], in: bufferSearchRange) {
+
                 // Found the delimiter in the buffer, fetch data from buffer up to the delimiter
-                let delimiterData = buffer.prefix(delimiterRange.lowerBound)
-                
+                let delimiterData = buffer.subdata(in: buffer.startIndex..<delimiterRange.lowerBound)
+
                 // Remove data from buffer including delimiter
                 let upToDelimiterRange = buffer.startIndex..<delimiterRange.upperBound
                 buffer.removeSubrange(upToDelimiterRange)
+
                 return delimiterData
             }
             
             // Delimiter not found in the buffer, read from file and add to the buffer
-            if let dataRead = readData(ofLength: bufferSize), !dataRead.isEmpty {
+            if let dataRead = try? fileHandle.read(upToCount: bufferSize), !dataRead.isEmpty {
                 buffer.append(dataRead)
             } else {
                 // No more data to be read, file is empty
