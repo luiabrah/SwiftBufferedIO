@@ -30,7 +30,7 @@ Next, in your target, add SwiftBufferedIO to your dependencies:
 
 
 ## Usage
- ### `FileScanner`
+ ### FileScanner
 `FileScanner` is a Swift class that provides a convenient interface for reading files containing lines of text. It wraps a `BufferedReader` to improve memory performance when reading large files compared to reading the entire file contents into memory. Use this class if you wish to read data from a file line by line.
 
 To use `FileScanner`, instantiate a `FileHandle` for the file you're interested in reading:
@@ -76,7 +76,7 @@ The following methods are also supported:
 * `reset()`: Discards any buffered data and resets the file handle pointer to the beginning of the file.
 * `close()`: Closes the `FileScanner` and releases any allocated resources.
 
-### `BufferedReader`
+### BufferedReader
 `BufferedReader` is a Swift class that provides buffering functionality for reading files using a `FileHandle`. It allows you to read data from a file in a more efficient manner by minimizing the number of actual read operations from the file.
 
 `BufferedReader` provides low-level operations for reading data from a file. Most users should use `FileScanner` to scan a file line by line.
