@@ -64,14 +64,17 @@ Being a `Sequences` gives us access to methods like `.map`, `.filter`, `.forEach
 scanner.filter { line in
     line.hasPrefix("...")
 }.map { line in
+    // Do something with the line of data
     process(line)
 }
 
-    // Close FileScanner when finished with it
+// Close FileScanner when finished with it
 fileScanner.close()
 ```
 
-Call the `reset()` method if you wish to scan through the file again.
+The following methods are also supported:
+* `reset()`: Discards any buffered data and resets the file handle pointer to the beginning of the file.
+* `close()`: Closes the `FileScanner` and releases any allocated resources.
 
 ### `BufferedReader`
 `BufferedReader` is a Swift class that provides buffering functionality for reading files using a `FileHandle`. It allows you to read data from a file in a more efficient manner by minimizing the number of actual read operations from the file.
